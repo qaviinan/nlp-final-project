@@ -1,0 +1,15 @@
+{
+  "checkpoint_path": "tinker://57fa444f-f20d-5659-919a-1856177df1ce:train:0/sampler_weights/multitask-v1",
+  "base_model": "meta-llama/Llama-3.2-3B",
+  "renderer_name": "role_colon",
+  "training": {
+    "num_steps": 500,
+    "batch_size": 4,
+    "learning_rate": 0.0001,
+    "lora_rank": 64,
+    "n_math": 7473,
+    "n_if": 7000,
+    "n_code": 7000
+  },
+  "published": true
+}
