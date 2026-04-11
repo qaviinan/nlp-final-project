@@ -1,119 +1,185 @@
-First pass changes. (Generated with Claude)
-
-# Changes to train_and_publish.py
-
-## Summary
-Replaced toy dummy data with real multi-task training across three datasets targeting
-IFEval >= 45%, GSM8K >= 50%, and HumanEval >= 30%.
+# train_and_publish.py — Cumulative Change Log
+# All changes tracked from original toy example through current version
 
 ---
 
-## 1. Replaced DEMO_CONVERSATIONS with real datasets
+## EXPERIMENT RESULTS SUMMARY
 
-**What changed:** Removed the 8 hardcoded dummy conversations. Added three dataset
-loaders: `load_gsm8k()`, `load_tulu()`, and `load_opencode()`.
+| Version    | Model | IFEval | GSM8K | HumanEval | Notes                                        |
+|------------|-------|--------|-------|-----------|----------------------------------------------|
+| Toy (orig) | 3B    | 28.8%  | 21.1% | 29.9%     | 10 steps, dummy data                         |
+| v1         | 3B    | 25.7%  | 26.0% | 30.5%     | 500 steps, real data, rank 64                |
+| v1         | 8B    | 37.7%  | 51.3% | 42.1%     | Same script, bigger model                    |
+| v2         | 8B    | 41.9%  | 56.7% | 46.3%     | Orca-Math, 50k Tulu, CoT, weighted           |
+| v3         | 8B    | 38.9%  | 58.9% | 45.1%     | MetaMath, 80k Tulu, system prompt, optimizer |
+| **v4**     | 8B    | TBD    | TBD   | TBD       | Argilla replaces Tulu, no system prompt      |
 
-**Why:** The toy data was just for verifying the pipeline. Real training requires
-domain-specific examples that teach the model the skills being evaluated.
-
----
-
-## 2. GSM8K — load_gsm8k()
-
-**What changed:** Loads all 7,473 examples from the `openai/gsm8k` train split.
-Converts each example from `{question, answer}` fields into conversation format
-`[{role: user, content: question}, {role: assistant, content: answer}]`.
-
-**Why:** GSM8K is small enough to use entirely. The conversion is necessary because
-`conversation_to_datum` expects a list of role/content dicts, not raw fields.
+Passing thresholds: IFEval >= 45%, GSM8K >= 50%, HumanEval >= 30%
+Competition leader: IFEval 68.1%, GSM8K 61.7%, HumanEval 39.6%
 
 ---
 
-## 3. Tulu-3 — load_tulu()
+## IFEval FAILURE ANALYSIS (v2 logs)
 
-**What changed:** Streams 7,000 examples from `allenai/tulu-3-sft-mixture`.
-No conversion needed since Tulu is already in messages format.
+Constraint-level analysis identified three failure buckets:
 
-**Why:** Tulu-3 is a broad instruction-following mixture (939k examples) designed
-to improve general instruction compliance — directly targeting IFEval. We sample
-7k to balance it against the other two tasks. Streaming avoids downloading the
-full 939k dataset.
+Bucket 1 — Case constraints (95-100% failure):
+  change_case:english_lowercase, change_case:english_capital, change_case:capital_word_frequency
 
----
+Bucket 2 — Length/count constraints (79-100% failure):
+  length_constraints:number_words, number_sentences, number_paragraphs, nth_paragraph_first_word
 
-## 4. OpenCodeInstruct — load_opencode()
+Bucket 3 — Keyword constraints (81-84% failure):
+  keywords:forbidden_words, keywords:frequency, keywords:existence
 
-**What changed:** Streams up to 7,000 examples from `nvidia/OpenCodeInstruct`,
-filtering to only include examples with `average_test_score >= 0.8`. Converts
-from `{input, output}` fields into conversation format.
-
-**Why:** OpenCodeInstruct is 5M examples so streaming + filtering is essential.
-The quality filter ensures we only train on code examples where the generated
-solution actually passes most unit tests, avoiding noisy or incorrect training signal.
+Finding: Generic Tulu data insufficient for mechanical constraint following.
+These constraints require self-monitoring during generation — a skill not
+present in general instruction-following data.
 
 ---
 
-## 5. Equal data mixing and shuffling
+## CHANGES FROM TOY EXAMPLE → v1
 
-**What changed:** All three datasets are concatenated (~21k total) and shuffled
-with a fixed random seed (42) before tokenization.
-
-**Why:** Equal representation prevents the model from overfitting to one task at
-the expense of others. Shuffling ensures batches contain a mix of task types,
-which stabilizes multi-task gradient updates. Fixed seed makes runs reproducible.
-
----
-
-## 6. num_steps: 10 → 500
-
-**What changed:** Default `--num_steps` increased from 10 to 500.
-
-**Why:** 10 steps is only enough to verify the pipeline. With ~21k examples and
-batch size 4, 500 steps covers ~2,000 examples — enough for meaningful learning
-while keeping runtime reasonable (~10-20 minutes on Tinker).
+### 1. Replaced DEMO_CONVERSATIONS with real datasets
+### 2. GSM8K — all 7,473 train examples, converted to conversation format
+### 3. Tulu-3 — 7,000 examples for instruction following
+### 4. OpenCodeInstruct — 7,000 examples, quality >= 0.8
+### 5. Equal mixing, shuffled with seed=42
+### 6. num_steps: 10 → 500
+### 7. LoRA rank: 32 → 64
+### 8. max_length: 512 → 1024
+### 9. Loss logging: every step → every 50 steps
 
 ---
 
-## 7. LoRA rank: 32 → 64
+## CHANGES FROM v1 → v2
 
-**What changed:** Default `--rank` increased from 32 to 64.
-
-**Why:** Higher rank gives the LoRA adapter more capacity to learn across three
-distinct tasks simultaneously. Rank 64 is a good balance between expressiveness
-and training stability for a 3B model.
-
----
-
-## 8. max_length: 512 → 1024
-
-**What changed:** `max_length` increased from 512 to 1024 tokens.
-
-**Why:** GSM8K answers include chain-of-thought reasoning steps, and code examples
-can be long. 512 tokens truncates many examples mid-answer, which corrupts the
-training signal. 1024 captures most examples fully.
+### 10. Model: 3B → 8B (locked for all future runs)
+### 11. Added Orca-Math (20k examples)
+### 12. Tulu-3: 7k → 50k
+### 13. OpenCodeInstruct: 7k → 10k, quality threshold 0.8 → 0.9
+### 14. Chain-of-thought prefix on all math answers
+### 15. Weighted sampling: math=2.0, IF=3.0, code=1.0
+### 16. num_steps: 500 → 1500
+### 17. Learning rate: 1e-4 → 5e-5
+### 18. LoRA rank: 64 → 128
+### 19. Loss logging: every 50 → every 100 steps with rolling average
 
 ---
 
-## 9. checkpoint_name: "demo" → "multitask-v1"
+## CHANGES FROM v2 → v3
 
-**What changed:** Default checkpoint name updated.
+### 20. Added MetaMathQA (20k examples)
+### 21. Tulu-3: 50k → 80k
+### 22. System prompt baked into all Tulu examples [LATER IDENTIFIED AS HARMFUL]
+### 23. IF weight: 3.0 → 4.0
+### 24. weight_decay: 0.0 → 0.01
+### 25. grad_clip_norm: 0.0 → 1.0
+### 26. LR warmup: 150 steps
+### 27. num_steps: 1500 → 2000
 
-**Why:** Descriptive naming makes it easier to track experiments on the Tinker
-dashboard when running multiple training runs.
+V3 OUTCOME: IFEval regressed from 41.9% → 38.9% despite more IF-focused changes.
+Constraint analysis showed system prompt made nearly every constraint type worse.
+GSM8K improved (56.7% → 58.9%), HumanEval roughly flat (46.3% → 45.1%).
 
 ---
 
-## 10. Loss logging: every step → every 50 steps
+## CHANGES FROM v3 → v4
 
-**What changed:** Loss is now printed at step 1 and every 50 steps thereafter.
+### 28. Replaced Tulu-3 entirely with argilla/ifeval-like-data filtered [NEW]
 
-**Why:** With 500 steps, printing every step produces 500 lines of output.
-Logging every 50 keeps the output readable while still showing the loss curve.
+**What changed:** Removed all 80k Tulu-3 examples. Added all 56,339 verified
+examples from argilla/ifeval-like-data filtered subset.
+
+**Why:** Failure analysis showed the model failing 79-100% of mechanical
+constraint types (case, length, keyword) despite 80k Tulu examples. Tulu is
+general instruction following — it does not contain examples of "write in
+all lowercase" or "use exactly N words." The argilla dataset was specifically
+designed to address IFEval constraint types:
+- Verified against the IFEval evaluator programmatically (prompt_level_strict_acc=True)
+- Covers all constraint categories we are failing: case, length, keywords, formatting
+- 56k examples, all confirmed correct
+- Generated by Qwen2.5-72B-Instruct, filtered to >90% pass rate before inclusion
+
+This is a published public training dataset, not synthetic data engineered
+from the test distribution. Using it is equivalent to using GSM8K train
+split to improve GSM8K performance.
+
+**Why drop Tulu entirely (not mix):** We want a clean experiment to isolate
+whether argilla is the right IF dataset. If we mix Tulu+argilla and results
+improve, we can't tell which drove the improvement. A clean swap gives us
+a definitive signal. Tulu can be added back in v5 if needed.
 
 ---
 
-## Hyperparameters (unchanged from toy example)
+### 29. Removed system prompt [REVERT from v3]
 
-- `batch_size`: 4 — kept the same, sufficient for 3B model
-- `lr`: 1e-4 — standard for LoRA fine-tuning
-- Adam betas: 0.9 / 0.95, eps: 1e-8 — standard values, no reason to change
+**What changed:** No system prompt prepended to any training examples.
+
+**Why:** V3 constraint analysis confirmed system prompt hurt every constraint
+category. V2 (no system prompt, 41.9% IFEval) outperformed v3 (system prompt,
+38.9% IFEval). The argilla dataset teaches constraint following through examples,
+not through meta-instructions — adding a system prompt on top would be redundant
+and potentially harmful again.
+
+---
+
+### 30. Optimizer improvements retained from v3 [KEPT]
+
+weight_decay=0.01, grad_clip_norm=1.0, warmup_steps=150 all retained.
+These are sound engineering choices independent of the dataset question.
+weight_decay helps generalization, grad_clip stabilizes training,
+warmup prevents early instability at rank 128.
+
+---
+
+### 31. argilla weight: 4.0 (replacing Tulu's 3.0→4.0)
+
+**What changed:** argilla gets weight=4.0, math=2.0, code=1.0.
+
+**Why:** IFEval is our largest gap vs competition leader (41.9% vs 68.1%).
+The argilla dataset is directly targeting our failure modes so it deserves
+high weight. Same reasoning as Tulu's 4.0 weight in v3, but now with a
+much more targeted dataset.
+
+---
+
+## FULL PARAMETER TABLE ACROSS ALL VERSIONS
+
+| Parameter            | Toy   | v1 3B  | v1 8B  | v2 8B  | v3 8B  | v4 8B  |
+|----------------------|-------|--------|--------|--------|--------|--------|
+| Model                | 3B    | 3B     | 8B     | 8B     | 8B     | 8B     |
+| num_steps            | 10    | 500    | 500    | 1500   | 2000   | 2000   |
+| batch_size           | 4     | 4      | 4      | 4      | 4      | 4      |
+| learning_rate        | 1e-4  | 1e-4   | 1e-4   | 5e-5   | 5e-5   | 5e-5   |
+| warmup_steps         | 0     | 0      | 0      | 0      | 150    | 150    |
+| weight_decay         | 0.0   | 0.0    | 0.0    | 0.0    | 0.01   | 0.01   |
+| grad_clip_norm       | 0.0   | 0.0    | 0.0    | 0.0    | 1.0    | 1.0    |
+| LoRA rank            | 32    | 64     | 64     | 128    | 128    | 128    |
+| max_length           | 512   | 1024   | 1024   | 1024   | 1024   | 1024   |
+| n_gsm8k              | 0     | 7,473  | 7,473  | 7,473  | 7,473  | 7,473  |
+| n_orca               | 0     | 0      | 0      | 20,000 | 20,000 | 20,000 |
+| n_metamath           | 0     | 0      | 0      | 0      | 20,000 | 20,000 |
+| n_tulu               | 0     | 7,000  | 7,000  | 50,000 | 80,000 | 0      |
+| n_argilla            | 0     | 0      | 0      | 0      | 0      | 56,339 |
+| n_code               | 0     | 7,000  | 7,000  | 10,000 | 10,000 | 10,000 |
+| code quality thresh  | —     | 0.8    | 0.8    | 0.9    | 0.9    | 0.9    |
+| CoT prefix (math)    | No    | No     | No     | Yes    | Yes    | Yes    |
+| System prompt        | No    | No     | No     | No     | Yes    | No     |
+| weighted sampling    | No    | No     | No     | Yes    | Yes    | Yes    |
+| math weight          | —     | —      | —      | 2.0    | 2.0    | 2.0    |
+| IF weight            | —     | —      | —      | 3.0    | 4.0    | 4.0    |
+| code weight          | —     | —      | —      | 1.0    | 1.0    | 1.0    |
+
+---
+
+## WHAT WE DELIBERATELY DID NOT DO
+
+**Synthetic data generation targeting IFEval constraint types**
+Rejected on principled grounds — engineering training data from the test
+constraint distribution risks gaming the evaluation. argilla is a published
+public dataset, not something we generated ourselves.
+
+**Keeping Tulu alongside argilla in v4**
+Deliberately excluded to get a clean experimental signal. If v4 improves
+on IFEval, we know argilla is the driver. Tulu can be reintroduced in v5.
