@@ -1,9 +1,9 @@
 {
-  "checkpoint_path": "tinker://4e772be4-5132-555b-b8c7-75182ff6dc96:train:0/sampler_weights/multitask-8b-v4",
+  "checkpoint_path": "tinker://5586ab4e-2d4b-5148-8e9d-d8c9d0f20e14:train:0/sampler_weights/grpo-seed",
   "base_model": "meta-llama/Llama-3.1-8B",
   "renderer_name": "role_colon",
   "training": {
-    "num_steps": 2000,
+    "num_steps": 10,
     "batch_size": 4,
     "learning_rate": 5e-05,
     "warmup_steps": 150,
@@ -24,5 +24,5 @@
     "math_weight": 2.0,
     "code_weight": 1.0
   },
-  "published": true
+  "published": false
 }
