@@ -1,6 +1,10 @@
 {
+<<<<<<< HEAD
   "final_checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b",
   "final_training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b",
+=======
+  "checkpoint_path": "tinker://5586ab4e-2d4b-5148-8e9d-d8c9d0f20e14:train:0/sampler_weights/grpo-seed",
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
   "base_model": "meta-llama/Llama-3.1-8B",
   "renderer_name": "role_colon",
   "resumed_from": "tinker://5194866b-f63f-5c06-9398-c0f780df94fb:train:0/weights/multitask-8b-v5-step8000",
@@ -62,7 +66,11 @@
     }
   ],
   "training": {
+<<<<<<< HEAD
     "num_steps": 8000,
+=======
+    "num_steps": 10,
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
     "batch_size": 4,
     "learning_rate": 3e-05,
     "warmup_steps": 100,
@@ -80,5 +88,5 @@
     "code_quality": 0.9,
     "seed": 43
   },
-  "published": true
+  "published": false
 }

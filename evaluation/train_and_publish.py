@@ -1,5 +1,9 @@
 """
+<<<<<<< HEAD
 Multi-task SFT training — v5 continuation
+=======
+Multi-task SFT training — v5b continuation
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
 Resumes from v5 step 8000 checkpoint and trains for another 8000 steps.
 Checkpoints saved every 1000 steps.
 
@@ -172,6 +176,7 @@ def save_checkpoint(tc, sc, name, publish=True):
 
 def main():
     parser = argparse.ArgumentParser(description="Continue training from v5 step 8000")
+<<<<<<< HEAD
     parser.add_argument("--num_steps",          type=int,   default=8000,               help="Additional training steps")
     parser.add_argument("--batch_size",          type=int,   default=4,                  help="Batch size")
     parser.add_argument("--lr",                  type=float, default=3e-5,               help="Peak learning rate — slightly lower for continuation")
@@ -184,6 +189,21 @@ def main():
     parser.add_argument("--checkpoint_interval", type=int,   default=CHECKPOINT_INTERVAL,help="Save every N steps")
     parser.add_argument("--resume_from",         type=str,   default=RESUME_FROM,        help="Training state path to resume from")
     parser.add_argument("--no_publish",          action="store_true",                    help="Skip publishing")
+=======
+    parser.add_argument("--num_steps",           type=int,   default=8000)
+    parser.add_argument("--batch_size",           type=int,   default=4)
+    parser.add_argument("--lr",                   type=float, default=3e-5,
+                        help="Slightly lower LR for continuation run")
+    parser.add_argument("--warmup_steps",         type=int,   default=100)
+    parser.add_argument("--weight_decay",         type=float, default=0.01)
+    parser.add_argument("--grad_clip_norm",       type=float, default=1.0)
+    parser.add_argument("--rank",                 type=int,   default=128)
+    parser.add_argument("--max_length",           type=int,   default=1024)
+    parser.add_argument("--checkpoint_name",      type=str,   default="multitask-8b-v5b")
+    parser.add_argument("--checkpoint_interval",  type=int,   default=CHECKPOINT_INTERVAL)
+    parser.add_argument("--resume_from",          type=str,   default=RESUME_FROM)
+    parser.add_argument("--no_publish",           action="store_true")
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
     args = parser.parse_args()
 
     # Setup
@@ -215,7 +235,11 @@ def main():
         (if_convos,   4.0),
         (code_convos, 2.0),
     ]
+<<<<<<< HEAD
     # Use a different seed so we see different examples than v5
+=======
+    # Different seed so we see different examples than v5
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
     all_convos = weighted_sample(datasets_with_weights, seed=SEED + 1)
     print(f"\nTotal after weighted sampling: {len(all_convos)}")
 
@@ -281,9 +305,14 @@ def main():
             print(f"  Step {step+1}/{args.num_steps} | Loss: {loss:.4f} | "
                   f"Avg(100): {avg_loss:.4f} | LR: {current_lr:.2e}")
 
+<<<<<<< HEAD
         # Save checkpoint every interval
         if (step + 1) % args.checkpoint_interval == 0:
             global_step = 8000 + step + 1  # Track global step count
+=======
+        if (step + 1) % args.checkpoint_interval == 0:
+            global_step = 8000 + step + 1
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
             ckpt_name = f"{args.checkpoint_name}-step{global_step}"
             checkpoint_path, training_state_path = save_checkpoint(
                 tc, sc, ckpt_name, publish=not args.no_publish
@@ -310,6 +339,7 @@ def main():
 
     # Save checkpoint info
     info = {
+<<<<<<< HEAD
         "final_checkpoint_path": checkpoint_path,
         "final_training_state_path": training_state_path,
         "base_model": MODEL,
@@ -335,6 +365,33 @@ def main():
             "n_code":             len(code_convos),
             "code_quality":       CODE_QUALITY_THRESHOLD,
             "seed":               SEED + 1,
+=======
+        "final_checkpoint_path":       checkpoint_path,
+        "final_training_state_path":   training_state_path,
+        "base_model":                  MODEL,
+        "renderer_name":               renderer_name,
+        "resumed_from":                args.resume_from,
+        "global_steps":                8000 + args.num_steps,
+        "checkpoints":                 checkpoints,
+        "training": {
+            "num_steps":               args.num_steps,
+            "batch_size":              args.batch_size,
+            "learning_rate":           args.lr,
+            "warmup_steps":            args.warmup_steps,
+            "weight_decay":            args.weight_decay,
+            "grad_clip_norm":          args.grad_clip_norm,
+            "lora_rank":               args.rank,
+            "max_length":              args.max_length,
+            "checkpoint_interval":     args.checkpoint_interval,
+            "n_gsm8k":                 len(gsm8k_convos),
+            "n_orca":                  len(orca_convos),
+            "n_meta":                  len(meta_convos),
+            "n_tulu":                  len(tulu_convos),
+            "n_argilla":               len(argilla_convos),
+            "n_code":                  len(code_convos),
+            "code_quality":            CODE_QUALITY_THRESHOLD,
+            "seed":                    SEED + 1,
+>>>>>>> 83069257d78942438deb3635fdf3b9a3fa560430
         },
         "published": not args.no_publish,
     }
