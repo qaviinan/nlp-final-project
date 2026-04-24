@@ -1,28 +1,84 @@
 {
-  "checkpoint_path": "tinker://4e772be4-5132-555b-b8c7-75182ff6dc96:train:0/sampler_weights/multitask-8b-v4",
+  "final_checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b",
+  "final_training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b",
   "base_model": "meta-llama/Llama-3.1-8B",
   "renderer_name": "role_colon",
+  "resumed_from": "tinker://5194866b-f63f-5c06-9398-c0f780df94fb:train:0/weights/multitask-8b-v5-step8000",
+  "global_steps": 16000,
+  "checkpoints": [
+    {
+      "step": 9000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step9000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step9000",
+      "avg_loss": 0.3468486050878714
+    },
+    {
+      "step": 10000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step10000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step10000",
+      "avg_loss": 0.4035245593454234
+    },
+    {
+      "step": 11000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step11000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step11000",
+      "avg_loss": 0.39410293391918993
+    },
+    {
+      "step": 12000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step12000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step12000",
+      "avg_loss": 0.34970196683328647
+    },
+    {
+      "step": 13000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step13000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step13000",
+      "avg_loss": 0.37926743831218596
+    },
+    {
+      "step": 14000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step14000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step14000",
+      "avg_loss": 0.3526191801893881
+    },
+    {
+      "step": 15000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step15000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step15000",
+      "avg_loss": 0.3933706802935529
+    },
+    {
+      "step": 16000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b-step16000",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b-step16000",
+      "avg_loss": 0.33055470536916365
+    },
+    {
+      "step": 16000,
+      "checkpoint_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/sampler_weights/multitask-8b-v5b",
+      "training_state_path": "tinker://a195cb45-b485-51da-8782-f15053809c5e:train:0/weights/multitask-8b-v5b",
+      "avg_loss": 0.33055470536916365
+    }
+  ],
   "training": {
-    "num_steps": 2000,
+    "num_steps": 8000,
     "batch_size": 4,
-    "learning_rate": 5e-05,
-    "warmup_steps": 150,
+    "learning_rate": 3e-05,
+    "warmup_steps": 100,
     "weight_decay": 0.01,
     "grad_clip_norm": 1.0,
     "lora_rank": 128,
     "max_length": 1024,
+    "checkpoint_interval": 1000,
     "n_gsm8k": 7473,
-    "n_orca": 20000,
-    "n_meta": 20000,
+    "n_orca": 50000,
+    "n_meta": 50000,
+    "n_tulu": 100000,
     "n_argilla": 56339,
-    "n_code": 10000,
+    "n_code": 100000,
     "code_quality": 0.9,
-    "cot_prefix": true,
-    "system_prompt": false,
-    "weighted_sampling": true,
-    "argilla_weight": 4.0,
-    "math_weight": 2.0,
-    "code_weight": 1.0
+    "seed": 43
   },
   "published": true
 }

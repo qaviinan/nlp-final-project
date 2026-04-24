@@ -1,0 +1,20 @@
+{
+  "checkpoint_path": "tinker://df89ebea-ae2f-5d84-a607-2ea829fe0ad4:train:0/sampler_weights/multitask-8b-v4-grpo-v2",
+  "sft_checkpoint": "tinker://4b3293b4-cd30-5203-a8e8-7155a230c9d0:train:0/weights/multitask-8b-v4b",
+  "base_model": "meta-llama/Llama-3.1-8B",
+  "method": "GRPO",
+  "training": {
+    "num_steps": 600,
+    "g_samples": 16,
+    "learning_rate": 1e-05,
+    "warmup_steps": 30,
+    "weight_decay": 0.01,
+    "grad_clip_norm": 1.0,
+    "temperature": 0.6,
+    "task": "IFEval",
+    "reward_fn": "instruction_following_eval strict",
+    "skipped_steps": 600,
+    "final_avg_reward": 0.0
+  },
+  "published": true
+}
